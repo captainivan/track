@@ -50,7 +50,7 @@ export default function CameraPage() {
         });
         const res = await api.json();
         localStorage.setItem("lastScan", JSON.stringify(res.analysis[0]));
-        router.push("/result");
+        router.push("/dashboard");
         setLoading(false);
     }
 
