@@ -5,7 +5,8 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
     await connectDB();
-    const { base64Image } = await req.json();
+    const { base64Image, text = "" } = await req.json();
+
     if (!base64Image) {
         return NextResponse.json({ message: "image missing" }, { status: 400 });
     }
@@ -18,12 +19,13 @@ export async function POST(req) {
                 {
                     inlineData: {
                         mimeType: "image/jpeg",
-                        data: base64Image,  // use directly, no fetching needed
+                        data: base64Image,
                     },
                 },
                 {
                     text: `
-You are a professional nutritionist AI. Analyze the food image and return ONLY a valid JSON array. No explanation, no markdown, no extra text — only raw JSON.
+You are a professional nutritionist AI. Analyze the food image ${text && text.length > 0 ? `and consider this note from the user: '${text}'` : ""}
+and return ONLY a valid JSON array. No explanation, no markdown, no extra text — only raw JSON.
 
 RULES:
 - Food will mostly be Indian cuisine.
@@ -83,10 +85,7 @@ OUTPUT FORMAT:
             if (part.text) raw += part.text;
         }
 
-        // strip markdown code blocks if Gemini wraps in ```json
         const cleaned = raw.replace(/```json|```/g, "").trim();
-
-        // parse to real JSON
         const analysis = JSON.parse(cleaned);
 
         const track = new FoodTrackModel({ data: analysis });

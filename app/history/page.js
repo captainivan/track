@@ -6,27 +6,26 @@ import Navigation from '../components/Navigation';
 import { Search, CalendarDays, UtensilsCrossed, Flame, Star, ChevronDown, ChevronUp, Beef, Wheat, Droplets, Leaf, Activity, GlassWater, IceCream2, Dumbbell, Sandwich, Pizza, Cookie, Salad, Camera } from "lucide-react";
 
 const TEAL = "#0D9488"
-const TEAL_LIGHT = "#CCFBF1"
 
 const FOOD_TYPE_COLORS = {
-    "Healthy": { bg: "#DCFCE7", text: "#16A34A", icon: Salad },
-    "Junk": { bg: "#FEE2E2", text: "#DC2626", icon: Pizza },
-    "Snack": { bg: "#FEF9C3", text: "#CA8A04", icon: Cookie },
-    "Meal": { bg: "#CCFBF1", text: "#0D9488", icon: UtensilsCrossed },
-    "Beverage": { bg: "#DBEAFE", text: "#2563EB", icon: GlassWater },
-    "Sweet": { bg: "#FCE7F3", text: "#DB2777", icon: IceCream2 },
-    "High Protein": { bg: "#EDE9FE", text: "#7C3AED", icon: Dumbbell },
-    "Fast Food": { bg: "#FFEDD5", text: "#EA580C", icon: Sandwich },
+    "Healthy": { bg: "#14532D", text: "#4ADE80", icon: Salad },
+    "Junk": { bg: "#7F1D1D", text: "#FCA5A5", icon: Pizza },
+    "Snack": { bg: "#713F12", text: "#FCD34D", icon: Cookie },
+    "Meal": { bg: "#134E4A", text: "#5EEAD4", icon: UtensilsCrossed },
+    "Beverage": { bg: "#1E3A5F", text: "#93C5FD", icon: GlassWater },
+    "Sweet": { bg: "#831843", text: "#F9A8D4", icon: IceCream2 },
+    "High Protein": { bg: "#3B0764", text: "#C4B5FD", icon: Dumbbell },
+    "Fast Food": { bg: "#7C2D12", text: "#FDBA74", icon: Sandwich },
 }
 
 function FoodCard({ food }) {
     const [open, setOpen] = useState(false);
-    const typeColor = FOOD_TYPE_COLORS[food.foodType] || { bg: TEAL_LIGHT, text: TEAL, icon: UtensilsCrossed };
+    const typeColor = FOOD_TYPE_COLORS[food.foodType] || { bg: "#134E4A", text: "#5EEAD4", icon: UtensilsCrossed };
     const TypeIcon = typeColor.icon;
 
     return (
-        <div className="w-full rounded-3xl mb-3 overflow-hidden bg-white"
-            style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }}>
+        <div className="w-full rounded-3xl mb-3 overflow-hidden"
+            style={{ background: "#161B27", border: "1px solid #1F2937", boxShadow: "0 2px 16px rgba(0,0,0,0.3)" }}>
 
             <div className="flex items-center gap-3 p-3">
                 <div className="w-16 h-16 rounded-2xl flex flex-col items-center justify-center shrink-0"
@@ -38,33 +37,38 @@ function FoodCard({ food }) {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-gray-800 leading-tight truncate">{food.name}</p>
+                    <p className="font-bold text-sm leading-tight truncate" style={{ color: "#F9FAFB" }}>{food.name}</p>
                     <div className="flex items-center gap-1.5 mt-1">
                         <Flame className="w-3 h-3" style={{ color: "#F59E0B" }} />
-                        <span className="text-xs font-semibold text-gray-500">{food.nutrition.calories_kcal} kcal</span>
-                        <span className="text-gray-200">·</span>
-                        <span className="text-xs text-gray-400">{food.isProcessed ? "Processed" : "Natural"}</span>
+                        <span className="text-xs font-semibold" style={{ color: "#9CA3AF" }}>{food.nutrition.calories_kcal} kcal</span>
+                        <span style={{ color: "#374151" }}>·</span>
+                        <span className="text-xs" style={{ color: "#6B7280" }}>{food.isProcessed ? "Processed" : "Natural"}</span>
                     </div>
                     <div className="flex items-center gap-0.5 mt-1.5">
                         {[...Array(5)].map((_, s) => (
                             <Star key={s} className="w-3 h-3"
-                                style={{ color: s < food.healthRating ? "#F59E0B" : "#E5E7EB", fill: s < food.healthRating ? "#F59E0B" : "#E5E7EB" }} />
+                                style={{ color: s < food.healthRating ? "#F59E0B" : "#374151", fill: s < food.healthRating ? "#F59E0B" : "#374151" }} />
                         ))}
-                        <span className="text-[10px] text-gray-400 ml-1">{food.healthRating}/5</span>
+                        <span className="text-[10px] ml-1" style={{ color: "#6B7280" }}>{food.healthRating}/5</span>
                     </div>
                 </div>
 
                 <button onClick={() => setOpen(!open)}
                     className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: open ? TEAL : "#F1F5F9" }}>
-                    {open ? <ChevronUp className="w-4 h-4 text-white" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                    style={{ background: open ? TEAL : "#1F2937" }}>
+                    {open
+                        ? <ChevronUp className="w-4 h-4 text-white" />
+                        : <ChevronDown className="w-4 h-4" style={{ color: "#6B7280" }} />}
                 </button>
             </div>
 
             {open && (
-                <div className="px-4 pb-4 flex flex-col gap-4 border-t border-gray-50 pt-3">
+                <div className="px-4 pb-4 flex flex-col gap-4 pt-3"
+                    style={{ borderTop: "1px solid #1F2937" }}>
+
+                    {/* Nutrition */}
                     <div>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Nutrition</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#4B5563" }}>Nutrition</p>
                         <div className="grid grid-cols-3 gap-2">
                             {[
                                 { label: "Protein", value: food.nutrition.protein_g, unit: "g", color: "#0D9488", icon: Beef },
@@ -74,24 +78,28 @@ function FoodCard({ food }) {
                                 { label: "Sugar", value: food.nutrition.sugar_g, unit: "g", color: "#EC4899", icon: Activity },
                                 { label: "Calories", value: food.nutrition.calories_kcal, unit: "kcal", color: "#F59E0B", icon: Flame },
                             ].map(m => (
-                                <div key={m.label} className="flex flex-col gap-1 p-2.5 rounded-2xl" style={{ background: "#F8FAFC" }}>
+                                <div key={m.label} className="flex flex-col gap-1 p-2.5 rounded-2xl"
+                                    style={{ background: "#1F2937" }}>
                                     <m.icon className="w-3.5 h-3.5" style={{ color: m.color }} />
-                                    <p className="font-black text-sm text-gray-800 leading-none mt-0.5">
-                                        {m.value}<span className="text-[9px] font-medium text-gray-400 ml-0.5">{m.unit}</span>
+                                    <p className="font-black text-sm leading-none mt-0.5" style={{ color: "#F9FAFB" }}>
+                                        {m.value}<span className="text-[9px] font-medium ml-0.5" style={{ color: "#6B7280" }}>{m.unit}</span>
                                     </p>
-                                    <p className="text-[9px] text-gray-400 font-semibold">{m.label}</p>
+                                    <p className="text-[9px] font-semibold" style={{ color: "#6B7280" }}>{m.label}</p>
                                 </div>
                             ))}
                         </div>
                     </div>
 
+                    {/* Items */}
                     <div>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Items</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#4B5563" }}>Items</p>
                         <div className="flex flex-col gap-1.5">
                             {food.items.map((item, i) => (
-                                <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl" style={{ background: "#F8FAFC" }}>
-                                    <p className="text-xs font-semibold text-gray-700">{item.itemName}</p>
-                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: TEAL_LIGHT, color: TEAL }}>
+                                <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl"
+                                    style={{ background: "#1F2937" }}>
+                                    <p className="text-xs font-semibold" style={{ color: "#D1D5DB" }}>{item.itemName}</p>
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                        style={{ background: "#134E4A", color: "#5EEAD4" }}>
                                         {item.itemWeight_g}g
                                     </span>
                                 </div>
@@ -99,33 +107,55 @@ function FoodCard({ food }) {
                         </div>
                     </div>
 
+                    {/* Vitamins */}
                     <div>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Tags</p>
-                        <div className="flex flex-wrap gap-1.5">
-                            {food.tags.map((tag, i) => (
-                                <span key={i} className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
-                                    style={{ background: TEAL_LIGHT, color: TEAL }}>{tag}</span>
+                        <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#4B5563" }}>Vitamins</p>
+                        <div className="flex flex-wrap gap-2">
+                            {food.vitamins.map((v, i) => (
+                                <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+                                    style={{ background: "#0D2B29", border: "1px solid #134E4A" }}>
+                                    <Leaf className="w-3 h-3" style={{ color: "#5EEAD4" }} />
+                                    <p className="text-[10px] font-semibold" style={{ color: "#D1D5DB" }}>{v.name}</p>
+                                    <p className="text-[10px]" style={{ color: "#6B7280" }}>{v.amount_mg}mg</p>
+                                </div>
                             ))}
                         </div>
                     </div>
 
+                    {/* Tags */}
+                    <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#4B5563" }}>Tags</p>
+                        <div className="flex flex-wrap gap-1.5">
+                            {food.tags.map((tag, i) => (
+                                <span key={i} className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
+                                    style={{ background: "#134E4A", color: "#5EEAD4" }}>{tag}</span>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Bottom row */}
                     <div className="flex gap-2">
                         <div className="flex-1 px-3 py-2 rounded-2xl flex flex-col items-center"
                             style={{
-                                background: food.shouldHaveMore === "yes" ? "#DCFCE7" :
-                                    food.shouldHaveMore === "no" ? "#FEE2E2" : TEAL_LIGHT
+                                background: food.shouldHaveMore === "yes" ? "#14532D" :
+                                    food.shouldHaveMore === "no" ? "#7F1D1D" : "#134E4A"
                             }}>
                             <p className="text-[10px] font-bold uppercase"
-                                style={{ color: food.shouldHaveMore === "yes" ? "#16A34A" : food.shouldHaveMore === "no" ? "#DC2626" : TEAL }}>
+                                style={{
+                                    color: food.shouldHaveMore === "yes" ? "#4ADE80" :
+                                        food.shouldHaveMore === "no" ? "#FCA5A5" : "#5EEAD4"
+                                }}>
                                 {food.shouldHaveMore === "yes" ? "Eat More" : food.shouldHaveMore === "no" ? "Limit" : "Perfect"}
                             </p>
-                            <p className="text-[9px] text-gray-400 mt-0.5">Recommendation</p>
+                            <p className="text-[9px] mt-0.5" style={{ color: "#6B7280" }}>Recommendation</p>
                         </div>
-                        <div className="flex-1 px-3 py-2 rounded-2xl flex flex-col items-center" style={{ background: "#F8FAFC" }}>
+                        <div className="flex-1 px-3 py-2 rounded-2xl flex flex-col items-center"
+                            style={{ background: "#1F2937" }}>
                             <p className="text-[10px] font-bold" style={{ color: TEAL }}>{Math.round(food.confidence * 100)}%</p>
-                            <p className="text-[9px] text-gray-400 mt-0.5">AI Confidence</p>
+                            <p className="text-[9px] mt-0.5" style={{ color: "#6B7280" }}>AI Confidence</p>
                         </div>
                     </div>
+
                 </div>
             )}
         </div>
@@ -168,29 +198,28 @@ export default function History() {
     }
 
     return (
-        <div className="h-screen w-full font-sans flex flex-col" style={{ background: "#F0FDFA" }}>
+        <div className="h-screen w-full font-sans flex flex-col" style={{ background: "#0B0F1A" }}>
             <NavBar />
 
             <div className="flex-1 overflow-y-auto px-5 pt-3 pb-4 flex flex-col gap-4"
                 style={{ scrollbarWidth: "none" }}>
 
-                {/* heading */}
                 <div>
-                    <h2 className="font-extrabold text-xl" style={{ color: TEAL }}>History</h2>
-                    <p className="text-gray-400 text-xs mt-0.5">Search meals by date</p>
+                    <h2 className="font-extrabold text-xl" style={{ color: "#5EEAD4" }}>History</h2>
+                    <p className="text-xs mt-0.5" style={{ color: "#4B5563" }}>Search meals by date</p>
                 </div>
 
-                {/* date picker */}
-                <div className="w-full rounded-3xl p-4 bg-white flex flex-col gap-3"
-                    style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+                <div className="w-full rounded-3xl p-4 flex flex-col gap-3"
+                    style={{ background: "#161B27", border: "1px solid #1F2937" }}>
                     <div className="flex items-center gap-2 px-4 py-3 rounded-2xl"
-                        style={{ background: "#F8FAFC", border: `1.5px solid ${TEAL_LIGHT}` }}>
-                        <CalendarDays className="w-4 h-4 shrink-0" style={{ color: TEAL }} />
+                        style={{ background: "#0D2B29", border: "1.5px solid #134E4A" }}>
+                        <CalendarDays className="w-4 h-4 shrink-0" style={{ color: "#5EEAD4" }} />
                         <input
                             type="date"
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
-                            className="flex-1 bg-transparent text-sm font-semibold text-gray-700 outline-none"
+                            className="flex-1 bg-transparent text-sm font-semibold outline-none"
+                            style={{ color: "#D1D5DB", colorScheme: "dark" }}
                         />
                     </div>
                     <button
@@ -207,33 +236,33 @@ export default function History() {
                     </button>
                 </div>
 
-                {/* results */}
                 {searched && (
                     <div>
                         <div className="flex items-center justify-between mb-3">
-                            <h3 className="font-bold text-sm text-gray-700">
+                            <h3 className="font-bold text-sm" style={{ color: "#D1D5DB" }}>
                                 {formatDate(date)}
                             </h3>
                             <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                                style={{ background: TEAL_LIGHT, color: TEAL }}>
+                                style={{ background: "#134E4A", color: "#5EEAD4" }}>
                                 {tracks.length} meal{tracks.length !== 1 ? "s" : ""}
                             </span>
                         </div>
 
                         {loading ? (
-                            <div className="w-full rounded-2xl p-6 flex items-center justify-center bg-white">
+                            <div className="w-full rounded-2xl p-6 flex items-center justify-center"
+                                style={{ background: "#161B27" }}>
                                 <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
                                     style={{ borderColor: TEAL }} />
                             </div>
                         ) : tracks.length === 0 ? (
-                            <div className="w-full rounded-2xl p-8 flex flex-col items-center gap-3 bg-white"
-                                style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+                            <div className="w-full rounded-2xl p-8 flex flex-col items-center gap-3"
+                                style={{ background: "#161B27", border: "1px solid #1F2937" }}>
                                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                                    style={{ background: TEAL_LIGHT }}>
-                                    <Camera className="w-6 h-6" style={{ color: TEAL }} />
+                                    style={{ background: "#134E4A" }}>
+                                    <Camera className="w-6 h-6" style={{ color: "#5EEAD4" }} />
                                 </div>
-                                <p className="text-gray-400 text-sm font-semibold">No meals found</p>
-                                <p className="text-gray-300 text-xs">Nothing tracked on this date</p>
+                                <p className="text-sm font-semibold" style={{ color: "#6B7280" }}>No meals found</p>
+                                <p className="text-xs" style={{ color: "#374151" }}>Nothing tracked on this date</p>
                             </div>
                         ) : (
                             tracks.map((food, i) => <FoodCard key={i} food={food} />)

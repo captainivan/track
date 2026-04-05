@@ -13,12 +13,12 @@ const Navigation = () => {
     ];
 
     return (
-        <div className="px-5 pb-8 pt-2">
+        <div className="px-5 pb-8 pt-2 bg-[#0B0F14]">
             <div
-                className="w-full flex items-center justify-around p-1.5 rounded-[2rem]"
+                className="w-full flex items-center justify-around p-1.5 rounded-[2rem] border border-white/5 backdrop-blur-md"
                 style={{
-                    background: "linear-gradient(135deg, #0D9488 0%, #0F766E 100%)",
-                    boxShadow: "0 8px 32px rgba(13,148,136,0.4)",
+                    background: "rgba(17, 24, 39, 0.7)",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.6)",
                 }}
             >
                 {tabs.map((e, i) => {
@@ -28,15 +28,19 @@ const Navigation = () => {
                             key={i}
                             onClick={() => router.push(`/${e.name}`)}
                             className={`flex flex-col items-center justify-center gap-1 py-2.5 rounded-[1.6rem] transition-all duration-300 ${
-                                isActive ? "bg-white px-7 shadow-md" : "px-5 active:scale-90"
+                                isActive
+                                    ? "bg-[#111827] px-7 shadow-lg scale-105"
+                                    : "px-5 active:scale-90 hover:scale-95"
                             }`}
                         >
                             <e.icon
                                 strokeWidth={isActive ? 2.5 : 1.6}
-                                className={`w-5 h-5 transition-all duration-300 ${isActive ? "text-[#0D9488]" : "text-white"}`}
+                                className={`w-5 h-5 transition-all duration-300 ${
+                                    isActive ? "text-teal-400" : "text-gray-400"
+                                }`}
                             />
                             {isActive && (
-                                <span className="text-[9px] font-bold tracking-widest uppercase" style={{ color: "#0D9488" }}>
+                                <span className="text-[9px] font-bold tracking-widest uppercase text-teal-400">
                                     {e.label}
                                 </span>
                             )}
