@@ -13,7 +13,7 @@ const Navigation = () => {
     ];
 
     return (
-        <div className="px-5 pb-8 pt-2 bg-[#0B0F14]">
+        <div className="px-5 pb-8 pt-2 bg-[#0b0f1a]">
             <div
                 className="w-full flex items-center justify-around p-1.5 rounded-[2rem] border border-white/5 backdrop-blur-md"
                 style={{
