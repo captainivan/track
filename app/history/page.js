@@ -1,11 +1,18 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import NavBar from '../components/NavBar';
 import Navigation from '../components/Navigation';
-import { Search, CalendarDays, UtensilsCrossed, Flame, Star, ChevronDown, ChevronUp, Beef, Wheat, Droplets, Leaf, Activity, GlassWater, IceCream2, Dumbbell, Sandwich, Pizza, Cookie, Salad, Camera } from "lucide-react";
+import { RadialBarChart, RadialBar, PolarAngleAxis } from "recharts";
+import {
+    Search, CalendarDays, Camera, Beef, Flame, Wheat,
+    UtensilsCrossed, GlassWater, IceCream2, Dumbbell, Sandwich,
+    Pizza, Cookie, Salad, Star, ChevronDown, ChevronUp,
+    Droplets, Leaf, Activity
+} from "lucide-react";
 
 const TEAL = "#0D9488"
+const GOALS = { protein: 70, calories: 2000, carbs: 300 }
 
 const FOOD_TYPE_COLORS = {
     "Healthy": { bg: "#14532D", text: "#4ADE80", icon: Salad },
@@ -16,6 +23,57 @@ const FOOD_TYPE_COLORS = {
     "Sweet": { bg: "#831843", text: "#F9A8D4", icon: IceCream2 },
     "High Protein": { bg: "#3B0764", text: "#C4B5FD", icon: Dumbbell },
     "Fast Food": { bg: "#7C2D12", text: "#FDBA74", icon: Sandwich },
+}
+
+function DonutChart({ value, goal, label, color, icon: Icon }) {
+    const pct = Math.min((value / goal) * 100, 100)
+    const data = [{ value: pct }]
+    const containerRef = useRef(null);
+    const [size, setSize] = useState(90);
+
+    useEffect(() => {
+        const update = () => {
+            if (containerRef.current) setSize(containerRef.current.offsetWidth);
+        };
+        update();
+        window.addEventListener("resize", update);
+        return () => window.removeEventListener("resize", update);
+    }, []);
+
+    const r1 = size * 0.31;
+    const r2 = size * 0.44;
+
+    return (
+        <div className="flex flex-col items-center gap-1 p-2 rounded-3xl flex-1 min-w-0"
+            style={{ background: "#161B27", border: "1px solid #1F2937" }}>
+            <p className="font-semibold uppercase tracking-widest"
+                style={{ fontSize: "clamp(7px, 1.8vw, 10px)", color: "#6B7280" }}>{label}</p>
+            <div className="relative w-full" ref={containerRef}>
+                <RadialBarChart
+                    width={size} height={size}
+                    cx={size / 2} cy={size / 2}
+                    innerRadius={r1} outerRadius={r2}
+                    data={data} startAngle={90}
+                    endAngle={90 - (pct / 100) * 360}
+                >
+                    <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                    <RadialBar background={{ fill: "#1F2937" }} dataKey="value"
+                        angleAxisId={0} fill={color} cornerRadius={6} />
+                </RadialBarChart>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-white font-black leading-none"
+                        style={{ fontSize: "clamp(10px, 3vw, 16px)" }}>{value}</span>
+                    <span style={{ fontSize: "clamp(7px, 1.8vw, 10px)", color: "#4B5563" }}>/{goal}</span>
+                </div>
+            </div>
+            <div className="flex items-center gap-1">
+                <Icon style={{ color, width: "clamp(9px, 2vw, 13px)", height: "clamp(9px, 2vw, 13px)" }} />
+                <p className="font-semibold" style={{ color, fontSize: "clamp(7px, 1.8vw, 10px)" }}>
+                    {Math.round(pct)}%
+                </p>
+            </div>
+        </div>
+    )
 }
 
 function FoodCard({ food }) {
@@ -66,7 +124,6 @@ function FoodCard({ food }) {
                 <div className="px-4 pb-4 flex flex-col gap-4 pt-3"
                     style={{ borderTop: "1px solid #1F2937" }}>
 
-                    {/* Nutrition */}
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#4B5563" }}>Nutrition</p>
                         <div className="grid grid-cols-3 gap-2">
@@ -90,7 +147,6 @@ function FoodCard({ food }) {
                         </div>
                     </div>
 
-                    {/* Items */}
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#4B5563" }}>Items</p>
                         <div className="flex flex-col gap-1.5">
@@ -107,7 +163,6 @@ function FoodCard({ food }) {
                         </div>
                     </div>
 
-                    {/* Vitamins */}
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#4B5563" }}>Vitamins</p>
                         <div className="flex flex-wrap gap-2">
@@ -122,7 +177,6 @@ function FoodCard({ food }) {
                         </div>
                     </div>
 
-                    {/* Tags */}
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#4B5563" }}>Tags</p>
                         <div className="flex flex-wrap gap-1.5">
@@ -133,7 +187,6 @@ function FoodCard({ food }) {
                         </div>
                     </div>
 
-                    {/* Bottom row */}
                     <div className="flex gap-2">
                         <div className="flex-1 px-3 py-2 rounded-2xl flex flex-col items-center"
                             style={{
@@ -155,7 +208,6 @@ function FoodCard({ food }) {
                             <p className="text-[9px] mt-0.5" style={{ color: "#6B7280" }}>AI Confidence</p>
                         </div>
                     </div>
-
                 </div>
             )}
         </div>
@@ -167,6 +219,7 @@ export default function History() {
     const [tracks, setTracks] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searched, setSearched] = useState(false);
+    const [nutrition, setNutrition] = useState({ calories: 0, protein: 0, carbs: 0 });
     const router = useRouter();
 
     useEffect(() => {
@@ -187,6 +240,18 @@ export default function History() {
         const res = await api.json();
         const allFoods = res.allTrack?.flatMap(t => t.data) || [];
         setTracks(allFoods);
+
+        let calories = 0, protein = 0, carbs = 0;
+        allFoods.forEach(food => {
+            calories += food.nutrition.calories_kcal || 0;
+            protein += food.nutrition.protein_g || 0;
+            carbs += food.nutrition.carbs_g || 0;
+        });
+        setNutrition({
+            calories: Math.round(calories),
+            protein: Math.round(protein),
+            carbs: Math.round(carbs)
+        });
         setLoading(false);
     };
 
@@ -237,8 +302,9 @@ export default function History() {
                 </div>
 
                 {searched && (
-                    <div>
-                        <div className="flex items-center justify-between mb-3">
+                    <div className="flex flex-col gap-4">
+
+                        <div className="flex items-center justify-between">
                             <h3 className="font-bold text-sm" style={{ color: "#D1D5DB" }}>
                                 {formatDate(date)}
                             </h3>
@@ -247,6 +313,14 @@ export default function History() {
                                 {tracks.length} meal{tracks.length !== 1 ? "s" : ""}
                             </span>
                         </div>
+
+                        {tracks.length > 0 && (
+                            <div className="flex gap-2 w-full">
+                                <DonutChart value={nutrition.protein} goal={GOALS.protein} label="Protein" color="#0D9488" icon={Beef} />
+                                <DonutChart value={nutrition.calories} goal={GOALS.calories} label="Calories" color="#F59E0B" icon={Flame} />
+                                <DonutChart value={nutrition.carbs} goal={GOALS.carbs} label="Carbs" color="#6366F1" icon={Wheat} />
+                            </div>
+                        )}
 
                         {loading ? (
                             <div className="w-full rounded-2xl p-6 flex items-center justify-center"
@@ -265,7 +339,10 @@ export default function History() {
                                 <p className="text-xs" style={{ color: "#374151" }}>Nothing tracked on this date</p>
                             </div>
                         ) : (
-                            tracks.map((food, i) => <FoodCard key={i} food={food} />)
+                            <div>
+                                <h3 className="font-bold text-sm mb-3" style={{ color: "#D1D5DB" }}>Meals</h3>
+                                {tracks.map((food, i) => <FoodCard key={i} food={food} />)}
+                            </div>
                         )}
                     </div>
                 )}
