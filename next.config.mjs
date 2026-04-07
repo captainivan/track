@@ -2,7 +2,7 @@
 const nextConfig = {
   allowedDevOrigins: [
     "*.cloudworkstations.dev",
-    "3000-firebase-track-1775054289412.cluster-edb2jv34dnhjisxuq5m7l37ccy.cloudworkstations.dev"
+    "3000-firebase-newtrack-1775569827369.cluster-va5f6x3wzzh4stde63ddr3qgge.cloudworkstations.dev"
   ],
 };
 

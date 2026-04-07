@@ -7,7 +7,8 @@ import { RadialBarChart, RadialBar, PolarAngleAxis } from "recharts"
 import {
     Flame, Beef, Wheat, Star, Camera, ChevronDown, ChevronUp,
     Leaf, Droplets, Activity, Salad, Pizza, Cookie,
-    UtensilsCrossed, GlassWater, IceCream2, Dumbbell, Sandwich
+    UtensilsCrossed, GlassWater, IceCream2, Dumbbell, Sandwich,
+    Trash2
 } from "lucide-react";
 
 const GOALS = { protein: 70, calories: 2000, carbs: 300 }
@@ -78,7 +79,28 @@ function DonutChart({ value, goal, label, color, icon: Icon }) {
     )
 }
 
-function FoodCard({ food }) {
+const handleTrashClick = async (id) => {
+    const confirmDelete = confirm("Are you sure you want to delete this meal?");
+    if (!confirmDelete) return;
+
+    const api = await fetch(`/api/deleteTrack`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id })
+    });
+
+    const res = await api.json();
+
+    if (res.message === "success") {
+        alert("Deleted Successfully");
+    } else {
+        alert("Something went wrong");
+    }
+};
+
+function FoodCard({ food, id }) {
     const [open, setOpen] = useState(false);
     const typeColor = FOOD_TYPE_COLORS[food.foodType] || { bg: "#134E4A", text: "#5EEAD4", icon: UtensilsCrossed };
     const TypeIcon = typeColor.icon;
@@ -217,7 +239,24 @@ function FoodCard({ food }) {
                             <p className="text-[9px] mt-0.5" style={{ color: "#6B7280" }}>AI Confidence</p>
                         </div>
                     </div>
+                    <div className="w-full flex items-center justify-end">
+                        <button
+                            onClick={() => handleTrashClick(id)}
+                            className="group flex items-center gap-2 px-3 py-2 rounded-xl transition-all active:scale-95"
+                            style={{
+                                background: "rgba(127,29,29,0.15)",
+                                border: "1px solid rgba(239,68,68,0.25)"
+                            }}
+                        >
+                            <Trash2
+                                className="w-4 h-4 transition-all group-hover:scale-110"
+                                style={{ color: "#F87171" }}
+                            />
+                            
+                        </button>
+                    </div>
                 </div>
+
             )}
         </div>
     )
@@ -240,6 +279,8 @@ export default function Dashboard() {
             try {
                 const api = await fetch("/api/getTodaysTrack");
                 const res = await api.json();
+                console.log(res);
+
                 if (res.allTrack?.length > 0) {
                     setTracks(res.allTrack);
                     let calories = 0, protein = 0, carbs = 0;
@@ -255,6 +296,7 @@ export default function Dashboard() {
                         protein: Math.round(protein),
                         carbs: Math.round(carbs)
                     });
+
                 }
             } finally {
                 setLoading(false);
@@ -324,8 +366,9 @@ export default function Dashboard() {
                         </div>
                     ) : (
                         tracks.map((track, i) =>
+
                             track.data.map((food, j) => (
-                                <FoodCard key={`${i}-${j}`} food={food} />
+                                <FoodCard key={`${i}-${j}`} food={food} id={track._id} />
                             ))
                         )
                     )}
