@@ -20,7 +20,7 @@ export default function CameraPage() {
     const [text, setText] = useState("");
 
     useEffect(() => {
-        if (localStorage.getItem("Authentication") !== "true") {
+        if (typeof window !== "undefined" && localStorage.getItem("Authentication") !== "true") {
             router.push("/");
         }
     }, []);
@@ -28,31 +28,46 @@ export default function CameraPage() {
     const handleImage = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        if (preview) URL.revokeObjectURL(preview);
         setPreview(URL.createObjectURL(file));
     };
 
     const handleAnalyze = async () => {
         setLoading(true);
-        const base64 = await new Promise((resolve) => {
-            fetch(preview)
-                .then(r => r.blob())
-                .then(blob => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result.split(",")[1]);
-                    reader.readAsDataURL(blob);
-                });
-        });
+        try {
+            const base64 = await new Promise((resolve, reject) => {
+                fetch(preview)
+                    .then(r => r.blob())
+                    .then(blob => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result.split(",")[1]);
+                        reader.onerror = () => reject(new Error("Failed to read image"));
+                        reader.readAsDataURL(blob);
+                    })
+                    .catch(reject);
+            });
 
-        const api = await fetch("/api/analyze", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ base64Image: base64, text: text })
-        });
-        const res = await api.json();
-        localStorage.setItem("lastScan", JSON.stringify(res.analysis[0]));
-        router.push("/dashboard");
-        setLoading(false);
-    }
+            const api = await fetch("/api/analyze", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ base64Image: base64, text: text })
+            });
+
+            const res = await api.json();
+
+            if (res.message === "success") {
+                localStorage.setItem("lastScan", JSON.stringify(res.analysis[0]));
+                router.push("/dashboard");
+            } else {
+                alert("Something went wrong. Please try again.");
+            }
+        } catch (error) {
+            console.error("Analyze error:", error);
+            alert("Something went wrong. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="h-screen w-full relative overflow-hidden font-sans flex flex-col"
@@ -97,7 +112,10 @@ export default function CameraPage() {
                             <span className="text-[10px] font-semibold" style={{ color: "#5EEAD4" }}>Ready to analyze</span>
                         </div>
                         <button
-                            onClick={() => setPreview(null)}
+                            onClick={() => {
+                                URL.revokeObjectURL(preview);
+                                setPreview(null);
+                            }}
                             className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center"
                             style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)" }}
                         >
