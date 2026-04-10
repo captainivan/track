@@ -16,13 +16,8 @@ export async function POST(req) {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const safeText = text.replace(/[`$]/g, "");
 
-    const result = await ai.models.generateContent({
-      model: "gemini-2.5-pro",
-      generationConfig: { responseMimeType: "application/json" },
-      contents: [
-        { inlineData: { mimeType, data: base64Image } },
-        {
-          text: `You are an expert AI nutritionist specializing in Indian cuisine analysis.
+    const MODELS = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite"];
+    const prompt = `You are an expert AI nutritionist specializing in Indian cuisine analysis.
 
 Analyze the given food image${safeText ? ` and consider this user note: "${safeText}"` : ""}.
 
@@ -111,17 +106,40 @@ OUTPUT FORMAT:
     "shouldHaveMore": "yes | no | enough",
     "confidence": number
   }
-]
-`
-        },
-      ],
-    });
+]`;
 
-    const raw = result?.candidates?.[0]?.content?.parts
-      ?.map((p) => p.text ?? "")
-      .join("");
+    let raw = null;
+    let lastError = null;
 
-    if (!raw) throw new Error("Empty Gemini response");
+    for (let i = 0; i < MODELS.length; i++) {
+      try {
+        const result = await ai.models.generateContent({
+          model: MODELS[i],
+          generationConfig: { responseMimeType: "application/json" },
+          contents: [
+            { inlineData: { mimeType, data: base64Image } },
+            { text: prompt },
+          ],
+        });
+
+        raw = result?.candidates?.[0]?.content?.parts
+          ?.map((p) => p.text ?? "")
+          .join("");
+
+        if (raw) {
+          console.log(`✅ Success with model: ${MODELS[i]}`);
+          break;
+        }
+
+      } catch (modelError) {
+        lastError = modelError;
+        console.warn(`⚠️ Model ${MODELS[i]} failed: ${modelError.message}`);
+      }
+    }
+
+    if (!raw) {
+      throw new Error(`All models failed. Last error: ${lastError?.message}`);
+    }
 
     const match = raw.replace(/```json|```/g, "").trim().match(/\[\s*{[\s\S]*}\s*\]/);
     if (!match) throw new Error("Invalid JSON format from Gemini");
@@ -130,10 +148,10 @@ OUTPUT FORMAT:
     if (!Array.isArray(analysis) || analysis.length === 0) throw new Error("Empty analysis");
 
     const track = await FoodTrackModel.create({ data: analysis });
-
     return NextResponse.json({ message: "success", analysis, track });
+
   } catch (error) {
-    console.error("Gemini error:", error.message);
+    console.error("Final error:", error.message);
     return NextResponse.json({ message: "failure", error: error.message }, { status: 500 });
   }
 }
