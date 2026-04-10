@@ -17,34 +17,102 @@ export async function POST(req) {
     const safeText = text.replace(/[`$]/g, "");
 
     const result = await ai.models.generateContent({
-      model: "gemini-3.1-flash-lite-preview",
+      model: "gemini-2.5-pro",
       generationConfig: { responseMimeType: "application/json" },
       contents: [
         { inlineData: { mimeType, data: base64Image } },
         {
-          text: `You are a professional nutritionist AI. Analyze the food image${safeText ? ` and consider this note: '${safeText}'` : ""}.
-Return ONLY a valid JSON array. No explanation, no markdown, no extra text.
-RULES:
-- Food will mostly be Indian cuisine.
-- If multiple items are on one plate → treat as ONE combined dish.
-- Estimate values realistically.
-- Every field must be present.
+          text: `You are an expert AI nutritionist specializing in Indian cuisine analysis.
+
+Analyze the given food image${safeText ? ` and consider this user note: "${safeText}"` : ""}.
+
+STRICT INSTRUCTIONS:
+- Return ONLY a valid JSON array.
+- DO NOT include markdown, explanations, or extra text.
+- Output must be directly parseable JSON.
+- If unsure, make realistic assumptions based on common Indian food portions.
+
+FOOD INTERPRETATION RULES:
+- If multiple food items are served together on one plate → treat them as ONE combined dish.
+- If clearly separate items (e.g., drink + meal), still combine into one structured output.
+- Estimate portion sizes in grams realistically.
+- Assume standard Indian serving sizes if unclear.
+
+CLASSIFICATION RULES:
+- "foodType" MUST be one of:
+  "Healthy", "Junk", "Snack", "Meal", "Beverage", "Sweet", "High Protein", "Fast Food"
+
+- "isProcessed":
+  true → packaged / refined / deep fried / junk
+  false → fresh / homemade / natural
+
+NUTRITION RULES:
+- Values must be realistic and internally consistent.
+- Calories must align with macros:
+  calories ≈ (protein*4 + carbs*4 + fat*9)
+- Fiber and sugar must not exceed carbs.
+- Avoid extreme or impossible numbers.
+
+VITAMINS RULE:
+- Include 2–5 relevant vitamins.
+- Use realistic mg values (small numbers).
+
+HEALTH RATING:
+- MUST be an INTEGER strictly between 1 and 5.
+- Allowed values ONLY: 1, 2, 3, 4, 5
+- DO NOT use decimals, fractions, or values outside this range.
+
+Meaning:
+1 = very unhealthy
+2 = unhealthy
+3 = average
+4 = healthy
+5 = very healthy
+
+- If unsure, choose the closest valid integer.
+- NEVER output a value less than 1 or greater than 5.
+
+TAGS RULE:
+- Tags MUST be lowercase hashtags.
+- Example: ["#highprotein", "#indianfood", "#homemade", "#lowfat"]
+- Minimum 3 tags, maximum 6.
+
+"shouldHaveMore":
+- "yes" → nutritionally insufficient / too little food
+- "no" → excessive or unhealthy quantity
+- "enough" → balanced portion
+
+CONFIDENCE:
+- Value between 0 and 1 (e.g., 0.85)
+- Lower if unclear or ambiguous image
+
 OUTPUT FORMAT:
-[{
-  "name": "string",
-  "foodType": "Healthy | Junk | Snack | Meal | Beverage | Sweet | High Protein | Fast Food",
-  "isProcessed": boolean,
-  "items": [{ "itemName": "string", "itemWeight_g": number }],
-  "nutrition": {
-    "calories_kcal": number, "protein_g": number, "carbs_g": number,
-    "fat_g": number, "fiber_g": number, "sugar_g": number
-  },
-  "vitamins": [{ "name": "string", "amount_mg": number }],
-  "healthRating": number,
-  "tags": ["string"],
-  "shouldHaveMore": "yes | no | enough",
-  "confidence": number
-}]`,
+[
+  {
+    "name": "string",
+    "foodType": "Healthy | Junk | Snack | Meal | Beverage | Sweet | High Protein | Fast Food",
+    "isProcessed": boolean,
+    "items": [
+      { "itemName": "string", "itemWeight_g": number }
+    ],
+    "nutrition": {
+      "calories_kcal": number,
+      "protein_g": number,
+      "carbs_g": number,
+      "fat_g": number,
+      "fiber_g": number,
+      "sugar_g": number
+    },
+    "vitamins": [
+      { "name": "string", "amount_mg": number }
+    ],
+    "healthRating": number,
+    "tags": ["#example"],
+    "shouldHaveMore": "yes | no | enough",
+    "confidence": number
+  }
+]
+`
         },
       ],
     });
