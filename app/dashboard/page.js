@@ -4,16 +4,10 @@ import { useRouter } from "next/navigation";
 import NavBar from '../components/NavBar';
 import Navigation from '../components/Navigation';
 import { RadialBarChart, RadialBar, PolarAngleAxis } from "recharts"
-import {
-    Flame, Beef, Wheat, Star, Camera, ChevronDown, ChevronUp,
-    Leaf, Droplets, Activity, Salad, Pizza, Cookie,
-    UtensilsCrossed, GlassWater, IceCream2, Dumbbell, Sandwich,
-    Trash2
-} from "lucide-react";
+import { Flame, Beef, Wheat, Star, Camera, ChevronDown, ChevronUp, Leaf, Droplets, Activity, Salad, Pizza, Cookie, UtensilsCrossed, GlassWater, IceCream2, Dumbbell, Sandwich, Trash2, Lightbulb } from "lucide-react";
 
 const GOALS = { protein: 70, calories: 2000, carbs: 300 }
 const TEAL = "#0D9488"
-const TEAL_LIGHT = "#0D9488"
 
 const FOOD_TYPE_COLORS = {
     "Healthy": { bg: "#14532D", text: "#4ADE80", icon: Salad },
@@ -34,9 +28,7 @@ function DonutChart({ value, goal, label, color, icon: Icon }) {
 
     useEffect(() => {
         const update = () => {
-            if (containerRef.current) {
-                setSize(containerRef.current.offsetWidth);
-            }
+            if (containerRef.current) setSize(containerRef.current.offsetWidth);
         };
         update();
         window.addEventListener("resize", update);
@@ -79,28 +71,85 @@ function DonutChart({ value, goal, label, color, icon: Icon }) {
     )
 }
 
-const handleTrashClick = async (id) => {
+const handleTrashClick = async (id, onDelete) => {
     const confirmDelete = confirm("Are you sure you want to delete this meal?");
     if (!confirmDelete) return;
-
-    const api = await fetch(`/api/deleteTrack`, {
+    const api = await fetch("/api/deleteTrack", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id })
     });
-
     const res = await api.json();
-
     if (res.message === "success") {
-        alert("Deleted Successfully");
+        onDelete();
     } else {
         alert("Something went wrong");
     }
 };
 
-function FoodCard({ food, id }) {
+function ItemRow({ item }) {
+    const [open, setOpen] = useState(false);
+
+    return (
+        <div className="rounded-2xl overflow-hidden" style={{ background: "#1F2937" }}>
+            {/* item header */}
+            <div className="flex items-center justify-between px-3 py-2.5">
+                <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold truncate" style={{ color: "#D1D5DB" }}>{item.itemName}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-semibold" style={{ color: "#F59E0B" }}>
+                            {item.itemCalories_kcal} kcal
+                        </span>
+                        <span style={{ color: "#374151" }}>·</span>
+                        <span className="text-[10px] font-semibold" style={{ color: "#0D9488" }}>
+                            {item.itemProtein_g}g protein
+                        </span>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style={{ background: "#134E4A", color: "#5EEAD4" }}>
+                        {item.itemWeight_g}g
+                    </span>
+                    <button onClick={() => setOpen(!open)}
+                        className="w-6 h-6 rounded-lg flex items-center justify-center transition-all"
+                        style={{ background: open ? TEAL : "#2D3748" }}>
+                        {open
+                            ? <ChevronUp className="w-3 h-3 text-white" />
+                            : <ChevronDown className="w-3 h-3" style={{ color: "#6B7280" }} />}
+                    </button>
+                </div>
+            </div>
+
+            {/* item detail dropdown */}
+            {open && (
+                <div className="px-3 pb-3 pt-1" style={{ borderTop: "1px solid #2D3748" }}>
+                    <div className="grid grid-cols-3 gap-1.5 mt-2">
+                        {[
+                            { label: "Calories", value: item.itemCalories_kcal, unit: "kcal", color: "#F59E0B", icon: Flame },
+                            { label: "Protein", value: item.itemProtein_g, unit: "g", color: "#0D9488", icon: Beef },
+                            { label: "Carbs", value: item.itemCarbs_g, unit: "g", color: "#6366F1", icon: Wheat },
+                            { label: "Fat", value: item.itemFat_g, unit: "g", color: "#EF4444", icon: Droplets },
+                            { label: "Fiber", value: item.itemFiber_g, unit: "g", color: "#22C55E", icon: Leaf },
+                            { label: "Sugar", value: item.itemSugar_g, unit: "g", color: "#EC4899", icon: Activity },
+                        ].map(m => (
+                            <div key={m.label} className="flex flex-col gap-0.5 p-2 rounded-xl"
+                                style={{ background: "#161B27" }}>
+                                <m.icon className="w-3 h-3" style={{ color: m.color }} />
+                                <p className="font-black text-xs leading-none mt-0.5" style={{ color: "#F9FAFB" }}>
+                                    {m.value}<span className="text-[8px] font-medium ml-0.5" style={{ color: "#6B7280" }}>{m.unit}</span>
+                                </p>
+                                <p className="text-[8px] font-semibold" style={{ color: "#6B7280" }}>{m.label}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}
+
+function FoodCard({ food, id, onDelete }) {
     const [open, setOpen] = useState(false);
     const typeColor = FOOD_TYPE_COLORS[food.foodType] || { bg: "#134E4A", text: "#5EEAD4", icon: UtensilsCrossed };
     const TypeIcon = typeColor.icon;
@@ -109,6 +158,7 @@ function FoodCard({ food, id }) {
         <div className="w-full rounded-3xl mb-3 overflow-hidden"
             style={{ background: "#161B27", border: "1px solid #1F2937", boxShadow: "0 2px 16px rgba(0,0,0,0.3)" }}>
 
+            {/* MAIN ROW */}
             <div className="flex items-center gap-3 p-3">
                 <div className="w-16 h-16 rounded-2xl flex flex-col items-center justify-center shrink-0"
                     style={{ background: typeColor.bg }}>
@@ -146,10 +196,21 @@ function FoodCard({ food, id }) {
                 </button>
             </div>
 
+            {/* DROPDOWN */}
             {open && (
                 <div className="px-4 pb-4 flex flex-col gap-4 pt-3"
                     style={{ borderTop: "1px solid #1F2937" }}>
 
+                    {/* Tip */}
+                    {food.tip && (
+                        <div className="flex items-start gap-2 px-3 py-2.5 rounded-2xl"
+                            style={{ background: "#1A2535", border: "1px solid #1E3A5F" }}>
+                            <Lightbulb className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#93C5FD" }} />
+                            <p className="text-xs font-medium" style={{ color: "#93C5FD" }}>{food.tip}</p>
+                        </div>
+                    )}
+
+                    {/* Nutrition */}
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#4B5563" }}>Nutrition</p>
                         <div className="grid grid-cols-3 gap-2">
@@ -173,29 +234,24 @@ function FoodCard({ food, id }) {
                         </div>
                     </div>
 
+                    {/* Items — each with its own dropdown */}
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#4B5563" }}>Items</p>
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-2">
                             {food.items.map((item, i) => (
-                                <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl"
-                                    style={{ background: "#1F2937" }}>
-                                    <p className="text-xs font-semibold" style={{ color: "#D1D5DB" }}>{item.itemName}</p>
-                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                                        style={{ background: "#134E4A", color: "#5EEAD4" }}>
-                                        {item.itemWeight_g}g
-                                    </span>
-                                </div>
+                                <ItemRow key={i} item={item} />
                             ))}
                         </div>
                     </div>
 
+                    {/* Vitamins */}
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#4B5563" }}>Vitamins</p>
                         <div className="flex flex-wrap gap-2">
                             {food.vitamins.map((v, i) => (
                                 <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
                                     style={{ background: "#0D2B29", border: "1px solid #134E4A" }}>
-                                    <Leaf className="w-3 h-3" style={{ color: TEAL }} />
+                                    <Leaf className="w-3 h-3" style={{ color: "#5EEAD4" }} />
                                     <p className="text-[10px] font-semibold" style={{ color: "#D1D5DB" }}>{v.name}</p>
                                     <p className="text-[10px]" style={{ color: "#6B7280" }}>{v.amount_mg}mg</p>
                                 </div>
@@ -203,6 +259,7 @@ function FoodCard({ food, id }) {
                         </div>
                     </div>
 
+                    {/* Tags */}
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#4B5563" }}>Tags</p>
                         <div className="flex flex-wrap gap-1.5">
@@ -215,6 +272,7 @@ function FoodCard({ food, id }) {
                         </div>
                     </div>
 
+                    {/* Bottom row */}
                     <div className="flex gap-2">
                         <div className="flex-1 px-3 py-2 rounded-2xl flex flex-col items-center"
                             style={{
@@ -239,24 +297,18 @@ function FoodCard({ food, id }) {
                             <p className="text-[9px] mt-0.5" style={{ color: "#6B7280" }}>AI Confidence</p>
                         </div>
                     </div>
+
+                    {/* Delete */}
                     <div className="w-full flex items-center justify-end">
                         <button
-                            onClick={() => handleTrashClick(id)}
+                            onClick={() => handleTrashClick(id, onDelete)}
                             className="group flex items-center gap-2 px-3 py-2 rounded-xl transition-all active:scale-95"
-                            style={{
-                                background: "rgba(127,29,29,0.15)",
-                                border: "1px solid rgba(239,68,68,0.25)"
-                            }}
-                        >
-                            <Trash2
-                                className="w-4 h-4 transition-all group-hover:scale-110"
-                                style={{ color: "#F87171" }}
-                            />
-                            
+                            style={{ background: "rgba(127,29,29,0.15)", border: "1px solid rgba(239,68,68,0.25)" }}>
+                            <Trash2 className="w-4 h-4 transition-all group-hover:scale-110" style={{ color: "#F87171" }} />
                         </button>
                     </div>
-                </div>
 
+                </div>
             )}
         </div>
     )
@@ -274,36 +326,35 @@ export default function Dashboard() {
         }
     }, []);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const api = await fetch("/api/getTodaysTrack");
-                const res = await api.json();
-                console.log(res);
-
-                if (res.allTrack?.length > 0) {
-                    setTracks(res.allTrack);
-                    let calories = 0, protein = 0, carbs = 0;
-                    res.allTrack.forEach(track => {
-                        track.data.forEach(food => {
-                            calories += food.nutrition.calories_kcal || 0;
-                            protein += food.nutrition.protein_g || 0;
-                            carbs += food.nutrition.carbs_g || 0;
-                        });
+    const fetchData = async () => {
+        try {
+            const api = await fetch("/api/getTodaysTrack");
+            const res = await api.json();
+            if (res.allTrack?.length > 0) {
+                setTracks(res.allTrack.reverse());
+                let calories = 0, protein = 0, carbs = 0;
+                res.allTrack.forEach(track => {
+                    track.data.forEach(food => {
+                        calories += food.nutrition.calories_kcal || 0;
+                        protein += food.nutrition.protein_g || 0;
+                        carbs += food.nutrition.carbs_g || 0;
                     });
-                    setNutrition({
-                        calories: Math.round(calories),
-                        protein: Math.round(protein),
-                        carbs: Math.round(carbs)
-                    });
-
-                }
-            } finally {
-                setLoading(false);
+                });
+                setNutrition({
+                    calories: Math.round(calories),
+                    protein: Math.round(protein),
+                    carbs: Math.round(carbs)
+                });
+            } else {
+                setTracks([]);
+                setNutrition({ calories: 0, protein: 0, carbs: 0 });
             }
-        };
-        fetchData();
-    }, []);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => { fetchData(); }, []);
 
     const totalMeals = tracks.reduce((acc, t) => acc + t.data.length, 0);
     const avgHealth = tracks.length > 0
@@ -339,7 +390,6 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* charts */}
                 <div className="flex gap-2 w-full">
                     <DonutChart value={nutrition.protein} goal={GOALS.protein} label="Protein" color="#0D9488" icon={Beef} />
                     <DonutChart value={nutrition.calories} goal={GOALS.calories} label="Calories" color="#F59E0B" icon={Flame} />
@@ -366,9 +416,8 @@ export default function Dashboard() {
                         </div>
                     ) : (
                         tracks.map((track, i) =>
-
                             track.data.map((food, j) => (
-                                <FoodCard key={`${i}-${j}`} food={food} id={track._id} />
+                                <FoodCard key={`${i}-${j}`} food={food} id={track._id} onDelete={fetchData} />
                             ))
                         )
                     )}

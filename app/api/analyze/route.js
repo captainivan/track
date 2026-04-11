@@ -72,6 +72,18 @@ TAGS RULE:
 - Example: ["#highprotein", "#indianfood", "#homemade", "#lowfat"]
 - Minimum 3 tags, maximum 6.
 
+TIP:
+- Provide a short, specific, and actionable dietary suggestion based on the meal
+- Max 20 words
+- use simple words and easy to undersatnd
+- Focus on improvement (e.g., reduce, add, replace, balance)
+- Avoid generic advice
+
+Examples:
+- "Reduce oil, add more vegetables"
+- "Increase protein, limit refined carbs"
+- "Swap fried items for grilled alternatives"
+
 "shouldHaveMore":
 - "yes" → nutritionally insufficient / too little food
 - "no" → excessive or unhealthy quantity
@@ -88,7 +100,16 @@ OUTPUT FORMAT:
     "foodType": "Healthy | Junk | Snack | Meal | Beverage | Sweet | High Protein | Fast Food",
     "isProcessed": boolean,
     "items": [
-      { "itemName": "string", "itemWeight_g": number }
+      { 
+    "itemName": "string", 
+    "itemWeight_g": number, 
+    "itemCalories_kcal": number, 
+    "itemProtein_g": number, 
+    "itemCarbs_g": number, 
+    "itemFat_g": number, 
+    "itemFiber_g": number, 
+    "itemSugar_g": number 
+    }
     ],
     "nutrition": {
       "calories_kcal": number,
@@ -103,6 +124,7 @@ OUTPUT FORMAT:
     ],
     "healthRating": number,
     "tags": ["#example"],
+    "tip": "string",
     "shouldHaveMore": "yes | no | enough",
     "confidence": number
   }
