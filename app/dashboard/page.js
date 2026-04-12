@@ -149,7 +149,8 @@ function ItemRow({ item }) {
     )
 }
 
-function FoodCard({ food, id, onDelete }) {
+function FoodCard({ food, id, onDelete, model }) {
+
     const [open, setOpen] = useState(false);
     const typeColor = FOOD_TYPE_COLORS[food.foodType] || { bg: "#134E4A", text: "#5EEAD4", icon: UtensilsCrossed };
     const TypeIcon = typeColor.icon;
@@ -299,7 +300,14 @@ function FoodCard({ food, id, onDelete }) {
                     </div>
 
                     {/* Delete */}
-                    <div className="w-full flex items-center justify-end">
+                    <div className="w-full flex items-center justify-between">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl"
+                            style={{ background: "#1F2937", border: "1px solid #2D3748" }}>
+                            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#5EEAD4" }} />
+                            <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#5EEAD4" }}>
+                                {model > 0 ? model : "Model Not Detected"}
+                            </span>
+                        </div>
                         <button
                             onClick={() => handleTrashClick(id, onDelete)}
                             className="group flex items-center gap-2 px-3 py-2 rounded-xl transition-all active:scale-95"
@@ -330,6 +338,8 @@ export default function Dashboard() {
         try {
             const api = await fetch("/api/getTodaysTrack");
             const res = await api.json();
+            console.log(res);
+
             if (res.allTrack?.length > 0) {
                 setTracks(res.allTrack.reverse());
                 let calories = 0, protein = 0, carbs = 0;
@@ -417,7 +427,7 @@ export default function Dashboard() {
                     ) : (
                         tracks.map((track, i) =>
                             track.data.map((food, j) => (
-                                <FoodCard key={`${i}-${j}`} food={food} id={track._id} onDelete={fetchData} />
+                                <FoodCard key={`${i}-${j}`} food={food} id={track._id} model={track.model} onDelete={fetchData} />
                             ))
                         )
                     )}

@@ -4,6 +4,10 @@ const FoodTrack = new mongoose.Schema({
     data: {
         type: Array,
         required: true
+    },
+    model:{
+        type: String,
+        required: true
     }
 }, { timestamps: true }) 
 

@@ -17,6 +17,8 @@ export async function POST(req) {
     const safeText = text.replace(/[`$]/g, "");
 
     const MODELS = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite"];
+    let succeededModel = null;
+
     const prompt = `You are an expert AI nutritionist specializing in Indian cuisine analysis.
 
 Analyze the given food image${safeText ? ` and consider this user note: "${safeText}"` : ""}.
@@ -150,6 +152,7 @@ OUTPUT FORMAT:
 
         if (raw) {
           console.log(`✅ Success with model: ${MODELS[i]}`);
+          succeededModel = MODELS[i]
           break;
         }
 
@@ -169,7 +172,7 @@ OUTPUT FORMAT:
     const analysis = JSON.parse(match[0]);
     if (!Array.isArray(analysis) || analysis.length === 0) throw new Error("Empty analysis");
 
-    const track = await FoodTrackModel.create({ data: analysis });
+    const track = await FoodTrackModel.create({ data: analysis,model: succeededModel });
     return NextResponse.json({ message: "success", analysis, track });
 
   } catch (error) {
