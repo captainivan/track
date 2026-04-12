@@ -305,7 +305,7 @@ function FoodCard({ food, id, onDelete, model }) {
                             style={{ background: "#1F2937", border: "1px solid #2D3748" }}>
                             <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#5EEAD4" }} />
                             <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#5EEAD4" }}>
-                                {model > 0 ? model : "Model Not Detected"}
+                                {model || "MODEL not found"}
                             </span>
                         </div>
                         <button
